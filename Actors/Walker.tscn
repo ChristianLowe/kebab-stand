@@ -1,0 +1,133 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://Sprites/Walker.png" type="Texture" id=1]
+
+[sub_resource type="GDScript" id=1]
+script/source = "extends KinematicBody2D
+
+onready var root = get_parent().get_parent()
+
+var stand_position: Vector2
+var exit_position: Vector2
+
+var customer = false
+var bought = false
+var waiting = false
+
+var speed = rand_range(60, 80)
+
+func _ready():
+	$TapArea.connect(\"input_event\", self, \"_input_event\")
+	$Patience1.connect(\"timeout\", self, \"_patience1\")
+	$Patience2.connect(\"timeout\", self, \"_patience2\")
+	$Patience3.connect(\"timeout\", self, \"_patience3\")
+
+func _process(delta):
+	z_index = position.y
+	
+	var target: Vector2
+	if customer and not bought:
+		target = stand_position
+	else:
+		target = exit_position
+	
+	var rel = target - position
+	$TapArea/Sprite.flip_h = rel.x < 0
+	if rel.length() < 4:
+		stop_walker()
+		return
+	
+	if not $AnimationPlayer.is_playing():
+		$AnimationPlayer.play(\"Walk\")
+		modulate.r = 0
+		modulate.g = 0
+		modulate.b = 0
+	
+	target = rel.normalized()
+	move_and_collide(target * speed * delta)
+
+func _input_event(viewport, event, shape_idx):
+	if event is InputEventMouseButton and event.is_pressed():
+		if waiting and not bought and root.current_customer == null:
+			waiting = false
+			root.start_minigame(self)
+
+func stop_walker():
+	if not customer or (customer and bought):
+		queue_free()
+		return
+	
+	if not waiting:
+		waiting = true
+		modulate.g = 255
+		$Patience1.start()
+		$TapArea/Sprite.frame = 1
+		$AnimationPlayer.stop()
+
+func _patience1():
+	if root.current_customer != self and not bought:
+		modulate.g = 0
+		modulate.b = 255
+		$Patience2.start()
+
+func _patience2():
+	if root.current_customer != self and not bought:
+		modulate.b = 0
+		modulate.r = 255
+		$Patience3.start()
+
+func _patience3():
+	if root.current_customer != self and not bought:
+		bought = true
+"
+
+[sub_resource type="Animation" id=2]
+length = 0.8
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath("TapArea/Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.2, 0.4, 0.6 ),
+"transitions": PoolRealArray( 1, 1, 1, 1 ),
+"update": 1,
+"values": [ 0, 1, 2, 3 ]
+}
+
+[sub_resource type="CapsuleShape2D" id=3]
+radius = 24.0
+height = 126.0
+
+[node name="Walker" type="KinematicBody2D"]
+script = SubResource( 1 )
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+autoplay = "Walk"
+anims/Walk = SubResource( 2 )
+
+[node name="TapArea" type="Area2D" parent="."]
+editor/display_folded = true
+
+[node name="Sprite" type="Sprite" parent="TapArea"]
+texture = ExtResource( 1 )
+offset = Vector2( 0, -60 )
+hframes = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="TapArea"]
+position = Vector2( -4, -49 )
+shape = SubResource( 3 )
+
+[node name="Patience1" type="Timer" parent="."]
+wait_time = 5.0
+one_shot = true
+
+[node name="Patience2" type="Timer" parent="."]
+wait_time = 4.0
+one_shot = true
+
+[node name="Patience3" type="Timer" parent="."]
+wait_time = 3.0
+one_shot = true

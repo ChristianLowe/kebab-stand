@@ -1,0 +1,46 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://Sprites/Nugget3.png" type="Texture" id=1]
+
+[sub_resource type="GDScript" id=1]
+script/source = "extends Node2D
+
+var rotate_per_second = deg2rad(rand_range(180, 240))
+var movement_speed = rand_range(400, 600)
+var y_mult = 1
+
+func _ready():
+	randomize()
+	var nugget_idx = String(randi() % 3 + 1)
+	var nugget_name = \"Nugget\" + nugget_idx
+	
+	$Area2D/Sprite.texture = load(\"res://Sprites/\" + nugget_name + \".png\")
+	$Area2D.add_child(load(\"res://Colliders/\" + nugget_name + \".tscn\").instance())
+
+func _process(delta):
+	rotate(delta * rotate_per_second)
+	
+	if (global_position.y > 300) and y_mult != 0:
+		y_mult = -1
+	elif (global_position.y < 50) and y_mult != 0:
+		y_mult = 1
+	
+	global_position.y += movement_speed * y_mult * delta
+"
+
+[sub_resource type="GDScript" id=2]
+script/source = "extends Area2D
+
+func _ready():
+	pass
+"
+
+[node name="Nugget" type="Node2D"]
+z_index = 4096
+script = SubResource( 1 )
+
+[node name="Area2D" type="Area2D" parent="."]
+script = SubResource( 2 )
+
+[node name="Sprite" type="Sprite" parent="Area2D"]
+texture = ExtResource( 1 )

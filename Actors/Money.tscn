@@ -1,0 +1,38 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://Fonts/GoodDogFontBig.tres" type="DynamicFont" id=1]
+
+[sub_resource type="GDScript" id=1]
+script/source = "extends Node2D
+
+var amount = 0
+
+var is_tip = false
+
+func _ready():
+	z_index = 2000
+	$DieTimer.connect(\"timeout\", self, \"queue_free\")
+	
+	if is_tip and amount == 0:
+		$Label.text = \"No Tip\"
+	else:
+		$Label.text = Global.cents_to_string(amount)
+	
+	
+func _process(delta):
+	position.y += 20 * delta
+"
+
+[node name="Money" type="Node2D"]
+script = SubResource( 1 )
+
+[node name="Label" type="Label" parent="."]
+margin_right = 40.0
+margin_bottom = 14.0
+custom_fonts/font = ExtResource( 1 )
+custom_colors/font_color = Color( 0.219608, 0.678431, 0.152941, 1 )
+text = "$X.XX"
+
+[node name="DieTimer" type="Timer" parent="."]
+one_shot = true
+autostart = true

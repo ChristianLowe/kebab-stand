@@ -1,0 +1,76 @@
+[gd_scene load_steps=6 format=2]
+
+[ext_resource path="res://Backgrounds/Tree.png" type="Texture" id=1]
+[ext_resource path="res://Fonts/GoodDogFontHuge.tres" type="DynamicFont" id=2]
+[ext_resource path="res://Fonts/GoodDogFontSmall.tres" type="DynamicFont" id=3]
+[ext_resource path="res://Scripts/Button.gd" type="Script" id=4]
+
+[sub_resource type="GDScript" id=1]
+script/source = "extends Node2D
+
+onready var transition_res = load(\"res://Interface/Transition.tscn\")
+var fading_out = false
+
+func _ready():
+	var t = transition_res.instance()
+	t.get_node('AnimationPlayer').play('fade_in')
+	$CanvasLayer.add_child(t)
+	
+	Global.connect(\"StartGameButton\", self, \"change_scene\")
+
+func change_scene():
+	if not fading_out:
+		fading_out = true
+		
+		var t = transition_res.instance()
+		t.get_node('AnimationPlayer').play('fade_out')
+		t.get_node('AnimationPlayer').connect('animation_finished', self, '_change_scene')
+		$CanvasLayer.add_child(t)
+
+func _change_scene(unused):
+	get_tree().change_scene(\"res://Scenes/DayScene.tscn\")
+	"
+
+[node name="TitleScene" type="Node2D"]
+script = SubResource( 1 )
+
+[node name="Sprite" type="Sprite" parent="."]
+texture = ExtResource( 1 )
+centered = false
+
+[node name="TitleLabel" type="Label" parent="."]
+margin_left = 96.8834
+margin_top = 114.031
+margin_right = 428.883
+margin_bottom = 199.031
+custom_fonts/font = ExtResource( 2 )
+text = "Kebab Stand"
+
+[node name="LoreLabel" type="Label" parent="."]
+margin_left = 175.762
+margin_top = 258.927
+margin_right = 351.762
+margin_bottom = 311.927
+custom_fonts/font = ExtResource( 3 )
+text = "    Start from nothing,
+earn $100 in three days!"
+
+[node name="CreditLabel" type="Label" parent="."]
+margin_left = 174.904
+margin_top = 392.678
+margin_right = 540.904
+margin_bottom = 445.678
+custom_fonts/font = ExtResource( 3 )
+text = "Game by Christian Lowe
+     For Ludum Dare 45"
+
+[node name="StartGameButton" type="Button" parent="."]
+margin_left = 202.431
+margin_top = 327.285
+margin_right = 327.431
+margin_bottom = 362.285
+custom_fonts/font = ExtResource( 3 )
+text = "Start Game"
+script = ExtResource( 4 )
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]

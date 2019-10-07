@@ -1,0 +1,45 @@
+[gd_scene load_steps=2 format=2]
+
+[sub_resource type="GDScript" id=1]
+script/source = "extends Node2D
+
+signal StartGameButton
+signal EndDayButton
+signal Attract
+signal MoreChickenButton
+signal AirHornButton
+signal TipJarButton
+
+func emit(signal_name):
+	emit_signal(signal_name)
+
+func emit_with_args(signal_name, args):
+	emit_signal(signal_name, args)
+
+var day = 0
+var money_today = 0
+var money_acc = 0
+var money_goal = 10000
+
+var has_tip_jar = false
+var has_air_horn = false
+var has_more_chicken = false
+
+func cents_to_string(cents: int) -> String:
+	var dollar_value = cents / 100
+	var cent_value = cents % 100
+	return \"$%d.%02d\" % [dollar_value, cent_value]
+
+func reset():
+	day = 0
+	money_today = 0
+	money_acc = 0
+	money_goal = 10000
+	
+	has_tip_jar = false
+	has_air_horn = false
+	has_more_chicken = false
+"
+
+[node name="Global" type="Node2D"]
+script = SubResource( 1 )

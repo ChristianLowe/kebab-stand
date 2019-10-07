@@ -1,0 +1,43 @@
+[gd_scene load_steps=2 format=2]
+
+[sub_resource type="GDScript" id=1]
+script/source = "extends Node2D
+
+var nuggets = []
+var nugget_to_check = null
+
+var minigame_result = {'Good': 0, 'Bad': 0}
+
+func _ready():
+	var nugget_res = load(\"res://Actors/Nugget.tscn\")
+	
+	var nugget_count = 5 if Global.has_more_chicken else 4
+	for i in range(nugget_count):
+		var nugget = nugget_res.instance()
+		nugget.name = \"Nugget\" + String(i)
+		nugget.position = Vector2(70*i, 0)
+		add_child(nugget)
+		nuggets.append(nugget)
+
+func _input(event):
+	if event is InputEventMouseButton and event.is_pressed() and len(nuggets) != 0:
+		var nugget = nuggets.pop_front()
+		nugget.global_position = nugget.position + Vector2(0, global_position.y)
+		nugget.y_mult = 0
+		nugget.rotate_per_second = 0
+		
+		yield(get_tree(), \"physics_frame\")
+		yield(get_tree(), \"physics_frame\") # wtf?
+		
+		var skewer = get_parent().get_node('Skewer').get_node('Area2D')
+		if nugget.get_node('Area2D').overlaps_area(skewer):
+			minigame_result['Good'] += 1
+		else:
+			minigame_result['Bad'] += 1
+		
+		get_parent().minigame_tap(minigame_result)
+		
+"
+
+[node name="NuggetBrain" type="Node2D"]
+script = SubResource( 1 )

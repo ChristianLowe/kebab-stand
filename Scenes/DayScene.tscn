@@ -1,0 +1,89 @@
+[gd_scene load_steps=8 format=2]
+
+[ext_resource path="res://Scripts/DayScene.gd" type="Script" id=1]
+[ext_resource path="res://Backgrounds/DayBG640.png" type="Texture" id=2]
+[ext_resource path="res://Actors/AirHorn.tscn" type="PackedScene" id=3]
+[ext_resource path="res://Actors/TipJar.tscn" type="PackedScene" id=4]
+
+[sub_resource type="RectangleShape2D" id=1]
+extents = Vector2( 94.9876, 29.8734 )
+
+[sub_resource type="RectangleShape2D" id=2]
+extents = Vector2( 29.7199, 74.962 )
+
+[sub_resource type="GDScript" id=3]
+script/source = "extends Node2D
+
+var max_time = 60.0
+var time_left = max_time
+
+func _ready():
+	pass
+
+func _process(delta):
+	time_left -= 1 * delta
+	if time_left < 0:
+		get_parent().stop_spawning()
+		queue_free()
+		
+	update()
+
+func _draw():
+	var center = Vector2.ZERO
+	var radius = 32
+	var angle_from = (360 * ((max_time - time_left) / max_time))
+	var angle_to = 360
+	var color = Color.rebeccapurple
+	
+	var nb_points = 48
+	var points_arc = PoolVector2Array()
+	
+	for i in range(nb_points + 1):
+		var angle_point = deg2rad(angle_from + i * (angle_to-angle_from) / nb_points - 90)
+		points_arc.push_back(center + Vector2(cos(angle_point), sin(angle_point)) * radius)
+	
+	for index_point in range(nb_points):
+		draw_line(points_arc[index_point], points_arc[index_point + 1], color, 2)
+"
+
+[node name="DayScene" type="Node2D"]
+script = ExtResource( 1 )
+
+[node name="Background" type="Sprite" parent="."]
+texture = ExtResource( 2 )
+centered = false
+
+[node name="Walkers" type="Node2D" parent="."]
+
+[node name="StandArea" type="Area2D" parent="."]
+editor/display_folded = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StandArea"]
+position = Vector2( 306.75, 312.582 )
+shape = SubResource( 1 )
+
+[node name="LeftArea" type="Area2D" parent="."]
+editor/display_folded = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LeftArea"]
+position = Vector2( -62.9829, 422.219 )
+shape = SubResource( 2 )
+
+[node name="RightArea" type="Area2D" parent="."]
+editor/display_folded = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="RightArea"]
+position = Vector2( 698.644, 411.722 )
+shape = SubResource( 2 )
+
+[node name="DayClock" type="Node2D" parent="."]
+position = Vector2( 40, 440 )
+script = SubResource( 3 )
+
+[node name="AirHorn" parent="." instance=ExtResource( 3 )]
+position = Vector2( 216.059, 114.888 )
+
+[node name="TipJar" parent="." instance=ExtResource( 4 )]
+position = Vector2( 404.681, 117.46 )
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]

@@ -1,0 +1,99 @@
+[gd_scene load_steps=7 format=2]
+
+[ext_resource path="res://Backgrounds/Tree.png" type="Texture" id=1]
+[ext_resource path="res://Fonts/GoodDogFontBig.tres" type="DynamicFont" id=2]
+[ext_resource path="res://Fonts/GoodDogFontSmall.tres" type="DynamicFont" id=3]
+[ext_resource path="res://Scripts/Button.gd" type="Script" id=4]
+
+[sub_resource type="GDScript" id=2]
+script/source = "extends Node2D
+
+onready var transition_res = load(\"res://Interface/Transition.tscn\")
+var fading_out = false
+
+func _ready():
+	if Global.has_more_chicken: $MoreChickenButton.disabled = true
+	if Global.has_air_horn: $AirHornButton.disabled = true
+	if Global.has_tip_jar: $TipJarButton.disabled = true
+	
+	var t = transition_res.instance()
+	t.get_node('AnimationPlayer').play('fade_in')
+	$CanvasLayer.add_child(t)
+	
+	Global.connect(\"MoreChickenButton\", self, \"_more_chicken_button\")
+	Global.connect(\"AirHornButton\", self, \"_air_horn_button\")
+	Global.connect(\"TipJarButton\", self, \"_tip_jar_button\")
+
+func _more_chicken_button():
+	if fading_out: return
+	Global.has_more_chicken = true
+	fade_out()
+
+func _air_horn_button():
+	if fading_out: return
+	Global.has_air_horn = true
+	fade_out()
+
+func _tip_jar_button():
+	if fading_out: return
+	Global.has_tip_jar = true
+	fade_out()
+	
+func fade_out():
+	fading_out = true
+	
+	var t = transition_res.instance()
+	t.get_node('AnimationPlayer').play('fade_out')
+	t.get_node('AnimationPlayer').connect('animation_finished', self, '_change_scene')
+	$CanvasLayer.add_child(t)
+
+func _change_scene(unused):
+	get_tree().change_scene(\"res://Scenes/DayScene.tscn\")
+"
+
+[sub_resource type="Theme" id=1]
+default_font = ExtResource( 3 )
+
+[node name="ShopScene" type="Node2D"]
+script = SubResource( 2 )
+
+[node name="Sprite" type="Sprite" parent="."]
+texture = ExtResource( 1 )
+centered = false
+
+[node name="RewardLabel" type="Label" parent="."]
+margin_left = 111.143
+margin_top = 125.358
+margin_right = 417.143
+margin_bottom = 174.358
+custom_fonts/font = ExtResource( 2 )
+text = "Choose Your Reward:"
+
+[node name="MoreChickenButton" type="Button" parent="."]
+margin_left = 184.376
+margin_top = 250.717
+margin_right = 345.376
+margin_bottom = 283.717
+theme = SubResource( 1 )
+text = "More Chicken"
+script = ExtResource( 4 )
+
+[node name="AirHornButton" type="Button" parent="."]
+margin_left = 184.232
+margin_top = 321.509
+margin_right = 345.232
+margin_bottom = 354.509
+theme = SubResource( 1 )
+text = "Air Horn"
+script = ExtResource( 4 )
+
+[node name="TipJarButton" type="Button" parent="."]
+margin_left = 180.212
+margin_top = 397.328
+margin_right = 341.212
+margin_bottom = 430.328
+theme = SubResource( 1 )
+text = "Tip Jar"
+script = ExtResource( 4 )
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
